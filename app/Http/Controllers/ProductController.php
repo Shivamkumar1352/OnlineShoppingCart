@@ -21,7 +21,7 @@ class ProductController extends Controller
             $cart = [
                 $product->id => [
                     'name' => $product->name,
-                    'quantity' => '1',
+                    'quantity' => 1,
                     'price' => $product->price,
                     'image' => $product->image
                 ]
@@ -55,7 +55,7 @@ class ProductController extends Controller
             unset($cart[$id]);
             session()->put('cart', $cart);
         }
-        return redirect()->back()->with('Success', "Remove from Cart");
+        return redirect()->back()->with('success', "Remove from Cart");
     }
 
     public function updateCart(Request $request, $id)

@@ -55,14 +55,24 @@
                          @endif
                      </tbody>
                      <tfoot>
-                         <tr>
-                             <td>
-                                 <a href="{{ route('products') }}" class="btn btn-outline-primary">⬅ Continue Shopping</a>
-                             </td>
-                             <td colspan="2"></td>
-                             <td><strong>Total: ₹ {{ $total }}</strong></td>
-                         </tr>
-                     </tfoot>
+                        <tr>
+                            <td>
+                                <a href="{{ route('products') }}" class="btn btn-outline-primary">⬅ Continue Shopping</a>
+                            </td>
+                            <td colspan="2"></td>
+                            <td><strong>Total: ₹ {{ $total }}</strong></td>
+                            <td>
+                                @if($total > 0)
+                                    <form action="{{ route('razorpay.payment') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="amount" value="{{ $total }}">
+                                        <button type="submit" class="btn btn-success">🛒 Pay Now</button>
+                                    </form>
+                                @endif
+                            </td>
+
+                        </tr>
+                    </tfoot>
                  </table>
              </div>
          </div>
