@@ -41,38 +41,6 @@ class RazorpayController extends Controller
         }
     }
 
-    // public function callback(Request $request){
-    //     $request->validate([
-    //         'razorpay_payment_id' => 'required|string',
-    //         'razorpay_order_id' => 'required|string',
-    //         'razorpay_signature' => 'required|string',
-    //     ]);
-
-    //     $key = env('RAZORPAY_KEY');
-    //     $secret = env('RAZORPAY_SECRET');
-    //     $api = new Api($key, $secret);
-
-    //     try {
-    //         $attributes = [
-    //             'razorpay_order_id' => $request->razorpay_order_id,
-    //             'razorpay_payment_id' => $request->razorpay_payment_id,
-    //             'razorpay_signature' => $request->razorpay_signature,
-    //         ];
-
-    //         $api->utility->verifyPaymentSignature($attributes);
-
-    //         // Store success message in session
-    //         session()->flash('success', '🎉 Your order has been placed successfully!');
-
-    //         // Clear cart after successful payment
-    //         session()->forget('cart');
-
-    //         return response()->json(['success' => true]);
-
-    //     } catch (\Exception $e) {
-    //         return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
-    //     }
-    // }
     public function callback(Request $request){
         $request->validate([
             'razorpay_payment_id' => 'required|string',
