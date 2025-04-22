@@ -41,7 +41,8 @@ class RazorpayController extends Controller
         }
     }
 
-    public function callback(Request $request){
+    public function callback(Request $request)
+    {
         $request->validate([
             'razorpay_payment_id' => 'required|string',
             'razorpay_order_id' => 'required|string',
@@ -53,12 +54,14 @@ class RazorpayController extends Controller
         $api = new Api($key, $secret);
 
         try {
+            // Prepare the attributes for verification
             $attributes = [
                 'razorpay_order_id' => $request->razorpay_order_id,
                 'razorpay_payment_id' => $request->razorpay_payment_id,
                 'razorpay_signature' => $request->razorpay_signature,
             ];
 
+            // Verify the payment signature
             $api->utility->verifyPaymentSignature($attributes);
 
             // Store success message in session
