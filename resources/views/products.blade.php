@@ -21,13 +21,19 @@
             @foreach ($products as $product)
                 <div class="col-md-3 mb-4">
                     <div class="card product-card shadow-sm border-0 h-100" style="background-color: white; border-radius: 20px;">
-                        <img src="{{ $product->image }}" class="card-img-top p-3" alt="{{ $product->name }}"
-                             style="height: 300px; object-fit: contain; background: white; border-radius: 20px 20px 0 0;">
+                        <a href="{{ route('product.detail', $product->id) }}">
+                            <img src="{{ $product->image }}" class="card-img-top p-3" alt="{{ $product->name }}"
+                                 style="height: 300px; object-fit: contain; background: white; border-radius: 20px 20px 0 0;">
+                        </a>
                         <div class="card-body text-center">
-                            <p style="color: black;">{{ $product->description }}</p>
+                            <a href="{{ route('product.detail', $product->id) }}" style="text-decoration: none; color: black;">
+                                <p>{{ Str::limit($product->description, 50) }}</p>
+                            </a>
                         </div>
                         <div class="card-footer d-flex justify-content-between align-items-center" style="border-top: 1px solid #374151; border-radius: 0 0 20px 20px; background-color: transparent;">
-                            <span class="fw-bold" style="color: black;">{{ $product->name }}</span>
+                            <a href="{{ route('product.detail', $product->id) }}" style="text-decoration: none; color: black;">
+                                <span class="fw-bold">{{ $product->name }}</span>
+                            </a>
                             <span class="text-primary fw-bold">₹ {{ $product->price }}</span>
                         </div>
                         <div class="p-3 text-center">
@@ -70,6 +76,14 @@
         .product-card .card-footer,
         .product-card .p-3 {
             background-color: transparent; /* Inherits the hover background */
+        }
+
+        /* Product link hover effect */
+        .product-card a {
+            transition: color 0.3s ease;
+        }
+        .product-card a:hover {
+            color: #3b82f6 !important;
         }
     </style>
 @endsection

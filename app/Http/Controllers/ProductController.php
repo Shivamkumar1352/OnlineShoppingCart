@@ -10,7 +10,7 @@ class ProductController extends Controller
 {
 
     public function index(){
-        return view('products')->with('products', Product::all());
+        return view('products')->with('products', Product::withCount('reviews')->get());
     }
 
     public function cart()

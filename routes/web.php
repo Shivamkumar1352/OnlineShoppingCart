@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RazorpayController;
-
+use App\Http\Controllers\ProductDetailController;
 
 Route::middleware(['auth'])->group(function () {
 Route::get('/', [ProductController::class, 'index'])->name('products');
@@ -19,4 +19,6 @@ Route::post('/razorpay/callback', [RazorpayController::class, 'callback'])->name
 Route::get('/products', [ProductController::class, 'index'])->name('products');
 });
 
+Route::get('/products/{product}', [ProductDetailController::class, 'show'])->name('product.detail');
+    Route::post('/products/{product}/reviews', [ProductDetailController::class, 'storeReview'])->name('products.reviews.store');
 require __DIR__.'/auth.php';
