@@ -11,7 +11,7 @@
         @endif
 
         <div class="header position-relative text-center p-3" style="background-color: #101827;">
-            <h2 class="text-primary m-0"><b>🛍️ Product Page</b></h2>
+            <h2 class="text-primary m-0"><b>Products</b></h2>
             <span class="position-absolute top-0 end-0 m-3 fs-3">
                 <a href="{{ route('cart') }}" style="color: #3b82f6;">🛒 (<span id="cart-count">{{ session('cart') ? count(session('cart')) : 0 }}</span>)</a>
             </span>

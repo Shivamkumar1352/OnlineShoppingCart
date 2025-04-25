@@ -4,6 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Razorpay\Api\Api;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Models\Order;
+use App\Models\CartItem;
+use Illuminate\Support\Facades\DB;
+
 
 class RazorpayController extends Controller
 {
@@ -43,41 +49,86 @@ class RazorpayController extends Controller
 
     public function callback(Request $request)
     {
-        $request->validate([
-            'razorpay_payment_id' => 'required|string',
-            'razorpay_order_id' => 'required|string',
-            'razorpay_signature' => 'required|string',
-        ]);
-
-        $key = env('RAZORPAY_KEY');
-        $secret = env('RAZORPAY_SECRET');
-        $api = new Api($key, $secret);
+        \Log::info('Razorpay callback received', $request->all());
 
         try {
-            // Prepare the attributes for verification
+            $request->validate([
+                'razorpay_payment_id' => 'required|string',
+                'razorpay_order_id' => 'required|string',
+                'razorpay_signature' => 'required|string',
+            ]);
+
+            $api = new Api(env('RAZORPAY_KEY'), env('RAZORPAY_SECRET'));
+
             $attributes = [
                 'razorpay_order_id' => $request->razorpay_order_id,
                 'razorpay_payment_id' => $request->razorpay_payment_id,
                 'razorpay_signature' => $request->razorpay_signature,
             ];
 
-            // Verify the payment signature
+            \Log::info('Verifying payment signature');
             $api->utility->verifyPaymentSignature($attributes);
 
-            // Store success message in session
-            session()->flash('success', '🎉 Your order has been placed successfully!');
+            \Log::info('Payment verified, creating order');
+            $order = $this->createOrder($request);
 
-            // Clear cart after successful payment
+            \Log::info('Order created', ['order_id' => $order->id]);
+
+            // Clear cart
             session()->forget('cart');
+            if (Auth::check()) {
+                CartItem::where('user_id', Auth::id())->delete();
+            }
 
-            return response()->json(['success' => true]);
+            return response()->json([
+                'success' => true,
+                'redirect' => route('profile.orders'),
+                'message' => 'Order placed successfully!'
+            ]);
 
         } catch (\Exception $e) {
-            // Store failure message in session
-            session()->flash('error', '❌ Payment failed. Please try again.');
-
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+            \Log::error('Payment processing failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment failed: ' . $e->getMessage()
+            ], 400);
         }
     }
+    protected function createOrder($request)
+{
+    if (!session('cart')) {
+        throw new \Exception('Cart is empty');
+    }
 
+    $total = 0;
+    $items = [];
+
+    foreach (session('cart') as $id => $item) {
+        $total += $item['price'] * $item['quantity'];
+        $items[] = [
+            'product_id' => $id,
+            'quantity' => $item['quantity'],
+            'price' => $item['price']
+        ];
+    }
+
+    DB::beginTransaction();
+    try {
+        $order = Order::create([
+            'user_id' => Auth::id(),
+            'total' => $total,
+            'status' => 'completed',
+            'payment_id' => $request->razorpay_payment_id,
+            'payment_method' => 'razorpay',
+        ]);
+
+        $order->items()->createMany($items);
+
+        DB::commit();
+        return $order;
+    } catch (\Exception $e) {
+        DB::rollBack();
+        throw $e;
+    }
+}
 }

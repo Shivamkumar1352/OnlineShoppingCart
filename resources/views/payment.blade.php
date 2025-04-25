@@ -13,30 +13,18 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <script>
-        // Initialize the Razorpay payment options
         var options = {
-            "key": "{{ env('RAZORPAY_KEY') }}",  // Your Razorpay Key
-            "amount": {{ $amount }},  // Amount in paise
-            "currency": "INR",  // Currency Type
-            "name": "MyStore",  // Your Company Name
-            "description": "Test Transaction",  // Description of the Transaction
-            "order_id": "{{ $orderId }}",  // Order ID generated from your server
-            "prefill": {
-                "name": "John Doe",  // Prefilled User Data
-                "email": "johndoe@example.com",
-                "contact": "9000090000"
-            },
-            "theme": {
-                "color": "#3399cc"  // Color for Razorpay Modal
-            },
-            // Handler to process the payment response
+            "key": "{{ env('RAZORPAY_KEY') }}",
+            "amount": {{ $amount }},
+            "currency": "INR",
+            "name": "Your Store",
+            "order_id": "{{ $orderId }}",
             "handler": function(response) {
-                // Send payment data to your backend for verification
                 fetch("{{ route('razorpay.callback') }}", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}"  // CSRF Token for security
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
                     },
                     body: JSON.stringify({
                         razorpay_payment_id: response.razorpay_payment_id,
@@ -44,29 +32,39 @@
                         razorpay_signature: response.razorpay_signature
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    // If the payment is successful
+                    console.log('Payment response:', data);
                     if (data.success) {
-                        window.location.href = "{{ route('products') }}";  // Redirect to products page
+                        // Show success message
+                        alert(data.message);
+                        // Redirect to order history
+                        window.location.href = data.redirect;
                     } else {
-                        window.location.href = "{{ route('products') }}?payment_status=failed";  // Redirect with failure
+                        throw new Error(data.message || 'Payment failed');
                     }
                 })
                 .catch(error => {
-                    // If there's an error in communication
-                    window.location.href = "{{ route('products') }}?payment_status=failed";
+                    console.error('Error:', error);
+                    alert('An error occurred: ' + error.message);
+                    window.location.href = "{{ route('cart') }}";
                 });
             },
-            // Modal dismiss behavior
+            "theme": {
+                "color": "#3399cc"
+            },
             "modal": {
                 "ondismiss": function() {
-                    window.location.href = "{{ route('products') }}?payment_status=failed";  // Redirect if user dismisses the modal
+                    window.location.href = "{{ route('cart') }}";
                 }
             }
         };
 
-        // Open the Razorpay payment modal
         var rzp1 = new Razorpay(options);
         rzp1.open();
     </script>
